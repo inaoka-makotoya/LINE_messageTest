@@ -2,7 +2,6 @@
   "name": "line-webhook-only",
   "private": true,
   "scripts": {
-    "build": "echo \"no frontend build\"",
     "dev": "vercel dev"
   },
   "devDependencies": {
