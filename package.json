@@ -1,0 +1,13 @@
+{
+  "name": "line-webhook-only",
+  "private": true,
+  "scripts": {
+    "build": "echo \"no frontend build\"",
+    "dev": "vercel dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "@types/node": "^20.11.0",
+    "@vercel/node": "^5.3.22"
+  }
+}
