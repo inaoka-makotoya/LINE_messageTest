@@ -1,9 +1,9 @@
 // api/webhook.ts
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { error } from 'node:console';
+//import { error } from 'node:console';
 import crypto from 'node:crypto';
-import { text } from 'node:stream/consumers';
+//import { text } from 'node:stream/consumers';
 
 async function readRawBody(req: VercelRequest): Promise<string> {
     const chunks: Uint8Array[] = [];
@@ -12,7 +12,7 @@ async function readRawBody(req: VercelRequest): Promise<string> {
 }
 
 function verifyLineSignature(raw: string, sig: string, secret: string): boolean {
-    const hmac = crypto.createHmac('sh256', secret).update(raw).digest('base64');
+    const hmac = crypto.createHmac('sha256', secret).update(raw).digest('base64');
     try{
         const aim = Buffer.from(hmac);
         const bdash = Buffer.from(sig);
@@ -30,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const secret = process.env.LINE_CHANNEL_SECRET!;
     const token  = process.env.LINE_CHANNEL_ACCESS_TOKEN!;
     const raw    = await readRawBody(req);
-    const sig    = req.headers['x_line_signature'] as string | undefined;
+    const sig    = req.headers['x-line-signature'] as string | undefined;
 
     if (!sig || !verifyLineSignature(raw, sig, secret)){
         return res.status(401).json({ ok: false, error: 'Invalid signature' });
