@@ -25,6 +25,20 @@ function verifyLineSignature(raw: string, sig: string, secret: string): boolean 
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+
+    // 試験的にコードを入れる
+    console.log('INCOMING', req.method, req.url, {
+        hasSig: !!req.headers[ 'x-line-signature' ]
+    });
+    // 接続確認（署名無しGET/HEAD）は無条件２００
+    if (req.method === 'GET' || req.method === 'HEAD') return res.status(200).send('OK');
+
+    //念のため：もし接続確認がPOSTで来て署名が無い時も２００返す
+    if (req.method === 'POST' && !req.headers['x-line-signature']) {
+        return res.status(200).send('OK(no-sign)');
+    }
+
+    // 接続確認
     try{
     if (req.method === 'GET' || req.method === 'HEAD') return res.status(200).send('OK');  // 接続確認
     if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'Method Not Allowed'});
