@@ -62,6 +62,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         await Promise.all(events.map(async (event: any) => {
             if (event.type === 'follow') {
+                // 友達追加時のメッセージ
                 const resp = await fetch('https://api.line.me/v2/bot/message/reply',{
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -73,11 +74,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         ],
                     }),
                 });
-                if (!resp.ok) {
-                    const txt = await resp.text();
-                console.error('LINE REPLY ERROR', resp.status, txt);
+                if (!resp.ok) console.error('LINE REPLY ERROR', resp.status, await resp.text());
+                return; // このイベントはここで終了させる（Repl）
             }
+
+            // ここからテキストメッセージへの応答
+            if (event.type === 'message' && event.message?.type === 'text') {
+                const text = (event.message.text || '').trim();
+
+                // 簡易的にコマンド分岐
+                let messages: any[] = [];
+                if(/^help$/i.test(text)) {
+                    messages = [{ type: 'text', text: '使えるコマンド:\nhelp, menu, time, about' }];
+                } else if (/^menu$/i.test(text)) {
+                    messages = [{ type: 'text', text: '1) お知らせ\n2) お問い合わせ\n3) アクセス' }];
+                } else if (/^time$/i.test(text)) {
+                    messages = [{ type: 'text', text: `現在時刻： ${new Date().toLocaleString('ja-JP')}` }];
+                } else if (/^about$/i.test(text)) {
+                    messages = [{ type: 'text', text: 'このボットはテスト版です。' }];
+                } else {
+                    messages = [{ type: 'text', text: `「${text}」ですね！` }];
+                }
+
+                const resp = await fetch('https://api.line.me/v2/bot/message/reply',{
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ replyToken: event.replyToken, messages }),
+                });
+                if (!resp.ok) console.error('LINE REPLY ERROR', resp.status, await resp.text());
+                return;
             }
+            // この下に他のイベントを追加するコードを書く
+            
         }));
         return res.status(200).json({ ok:true });
         } catch (e: any) {
